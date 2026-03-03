@@ -24,6 +24,130 @@ If your project needs Selenium-based UI tests written in Java, this template giv
 
 ---
 
+### Example: Writing Your First Test
+
+The steps below show exactly how to add a brand-new automated test to the project. The full working version already lives in [`src/test/java/com/lazerycode/selenium/tests/GoogleExampleIT.java`](src/test/java/com/lazerycode/selenium/tests/GoogleExampleIT.java).
+
+#### Step 1 – Create a Page Object
+
+A Page Object models one page (or component) of your web application. It hides raw Selenium calls behind readable methods, keeping your tests clean.
+
+Create `src/test/java/com/lazerycode/selenium/page_objects/GoogleHomePage.java`:
+
+```java
+package com.lazerycode.selenium.page_objects;
+
+import com.lazerycode.selenium.DriverBase;
+import com.lazerycode.selenium.util.Query;
+import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
+
+import static com.lazerycode.selenium.util.AssignDriver.initQueryObjects;
+
+public class GoogleHomePage {
+
+    // Locate the search bar by the HTML name attribute
+    private final Query searchBar = new Query().defaultLocator(By.name("q"));
+    // Locate the Search button by its name attribute
+    private final Query googleSearch = new Query().defaultLocator(By.name("btnK"));
+
+    private final WebDriverWait wait;
+
+    public GoogleHomePage() throws Exception {
+        // Wire all Query fields to the current driver thread
+        initQueryObjects(this, DriverBase.getDriver());
+        wait = new WebDriverWait(DriverBase.getDriver(), Duration.ofSeconds(15));
+    }
+
+    /** Types the search term into the Google search bar and returns this page. */
+    public GoogleHomePage enterSearchTerm(String searchTerm) {
+        wait.until(ExpectedConditions.presenceOfElementLocated(searchBar.by()));
+        searchBar.findWebElement().clear();
+        searchBar.findWebElement().sendKeys(searchTerm);
+        return this;
+    }
+
+    /** Dismisses the cookie consent banner if present. */
+    public GoogleHomePage acceptCookies() {
+        Query acceptCookiesPopup = new Query().defaultLocator(By.xpath("//*[.='I agree']"));
+        new WebDriverWait(DriverBase.getDriver(), Duration.ofSeconds(5))
+                .until(ExpectedConditions.presenceOfElementLocated(acceptCookiesPopup.by()));
+        acceptCookiesPopup.findWebElement().click();
+        return this;
+    }
+
+    /** Submits the search and returns the results page object. */
+    public GoogleSearchPage submitSearch() throws Exception {
+        googleSearch.findWebElement().submit();
+        return new GoogleSearchPage();
+    }
+}
+```
+
+#### Step 2 – Create the Test Class
+
+Test classes must end in `IT` (Integration Test) so that the Maven Failsafe plugin picks them up. Extend `DriverBase` to get a managed, thread-safe `WebDriver` instance.
+
+Create `src/test/java/com/lazerycode/selenium/tests/GoogleExampleIT.java`:
+
+```java
+package com.lazerycode.selenium.tests;
+
+import com.lazerycode.selenium.DriverBase;
+import com.lazerycode.selenium.page_objects.GoogleHomePage;
+import com.lazerycode.selenium.page_objects.GoogleSearchPage;
+import org.openqa.selenium.WebDriver;
+import org.testng.annotations.Test;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+public class GoogleExampleIT extends DriverBase {
+
+    @Test
+    public void googleCheeseExample() throws Exception {
+        // 1. Get the thread-safe WebDriver managed by DriverBase
+        WebDriver driver = getDriver();
+
+        // 2. Navigate to the page under test
+        driver.get("http://www.google.com");
+
+        // 3. Interact with the page via the Page Object – no raw Selenium in the test
+        GoogleHomePage googleHomePage = new GoogleHomePage();
+        googleHomePage.acceptCookies();                                    // dismiss cookie banner
+        GoogleSearchPage results = googleHomePage
+                                        .enterSearchTerm("Cheese")        // type into search bar
+                                        .submitSearch();                  // click Search
+
+        // 4. Wait for the result page to load, then assert the page title
+        results.waitForPageTitleToStartWith("Cheese");
+        assertThat(results.getPageTitle()).isEqualTo("Cheese - Google Search");
+    }
+}
+```
+
+#### Step 3 – Run the Test
+
+```shell
+# Run all integration tests in headless Firefox (default)
+mvn clean verify
+
+# Run in headless Chrome instead
+mvn clean verify -Dbrowser=chrome
+
+# Run with a visible browser window (useful while writing tests)
+mvn clean verify -Dbrowser=chrome -Dheadless=false
+
+# Run with 4 parallel threads to speed up a large suite
+mvn clean verify -Dthreads=4
+```
+
+When the test fails, a screenshot is automatically saved to `target/screenshots/` — no extra setup needed.
+
+---
+
 A maven template for Selenium 4 that has the latest dependencies so that you can just check out and start writing tests in four easy steps. If you like what you see have a look at
 my Selenium book [Mastering Selenium Webdriver](https://www.amazon.co.uk/Mastering-Selenium-WebDriver-Mark-Collin/dp/1784394351).
 
