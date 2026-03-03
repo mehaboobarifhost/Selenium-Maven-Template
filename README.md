@@ -3,6 +3,27 @@ Selenium-Maven-Template
 
 [![Join the chat at https://gitter.im/Ardesco/Selenium-Maven-Template](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Ardesco/Selenium-Maven-Template?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+### Purpose & Summary
+
+This repository is a **ready-to-use Maven project template for Java-based Selenium WebDriver test automation**. Its goal is to eliminate boilerplate setup so that teams can clone it and start writing browser tests immediately.
+
+**What it provides out of the box:**
+
+- **Selenium 4 + TestNG + AssertJ** – pre-wired dependencies for writing and asserting browser-level tests in Java.
+- **Automatic WebDriver binary management** – the `driver-binary-downloader-maven-plugin` downloads the correct browser driver (ChromeDriver, GeckoDriver, EdgeDriver, etc.) for your OS automatically; no manual setup needed.
+- **Multi-browser support** – switch between Firefox, Chrome, Edge, IE, Opera, and Brave via a single command-line flag (`-Dbrowser=chrome`).
+- **Headless mode** – run tests without a visible browser window (`-Dheadless=true`, enabled by default).
+- **Parallel test execution** – configure the number of concurrent test threads with `-Dthreads=N`.
+- **Selenium Grid / cloud support** – point tests at a remote Grid or SauceLabs with `-Dremote=true -DseleniumGridURL=...`.
+- **Page Object Model pattern** – example page objects (`GoogleHomePage`, `GoogleSearchPage`) demonstrate how to structure maintainable test code.
+- **Screenshot on failure** – a TestNG listener automatically captures a screenshot whenever a test fails and saves it to `target/screenshots`.
+- **Proxy support** – configure an HTTP proxy for tests via Maven properties.
+
+**Is it helpful for a Java test automation project? Yes.**  
+If your project needs Selenium-based UI tests written in Java, this template gives you a production-ready starting structure — driver management, logging (Log4j 2), parallel execution, and reporting scaffolding — so you can focus on writing test logic rather than wiring infrastructure together.
+
+---
+
 A maven template for Selenium 4 that has the latest dependencies so that you can just check out and start writing tests in four easy steps. If you like what you see have a look at
 my Selenium book [Mastering Selenium Webdriver](https://www.amazon.co.uk/Mastering-Selenium-WebDriver-Mark-Collin/dp/1784394351).
 
